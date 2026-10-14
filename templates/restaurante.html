@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}{{ r.nombre }} · Sabrosometro{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <a href="/restaurantes{% if is_admin %}?admin=true{% endif %}" class="text-sm text-blue-600 hover:underline">← Volver a la lista</a>
+
+    {% if error %}
+    <div class="mt-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">{{ error }}</div>
+    {% endif %}
+
+    <div class="relative h-[300px] w-full rounded-3xl overflow-hidden flex flex-col justify-center items-center p-8 mt-8 text-center">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent -z-10"></div>
+        <div 
+            class="absolute inset-0 bg-cover bg-center scale-105 blur-[1px] brightness-90 -z-20"
+            style="background-image: url('https://th.bing.com/th/id/R.ec6bf82064d04642edacc92026c44f1c?rik=1iFxq0nAIXuesA&pid=ImgRaw&r=0');"
+        ></div>
+        <h1 class="text-5xl font-bold text-white drop-shadow-lg relative z-10">
+            {{ r.nombre }}
+        </h1>    
+    </div>
+
+    <div class="my-8 px-6">
+        <p class="text-gray-500 mb-4">{{ r.tipo_comida }}</p>
+        <dl class="text-sm space-y-2 mb-8">
+            <div class="flex gap-2"><dt class="w-28"><i class="fa-solid fa-map-location-dot"></i> Dirección</dt><dd class="text-gray-700">{{ r.direccion }}</dd></div>
+            <div class="flex gap-2"><dt class="w-28"><i class="fa-solid fa-clock"></i> Horario</dt><dd class="text-gray-700">{{ r.hora_apertura.strftime('%H:%M') }} - {{ r.hora_cierre.strftime('%H:%M') }}</dd></div>
+            {% if r.telefono %}
+            <div class="flex gap-2"><dt class="w-28"> <i class="fa-solid fa-phone-volume"></i> Teléfono</dt><dd class="text-gray-700">{{ r.telefono }}</dd></div>
+            {% endif %}
+            {% if r.precio_promedio is not none %}
+            <div class="flex gap-2"><dt class="w-28"> <i class="fa-solid fa-hand-holding-dollar"></i> Precio prom.</dt><dd class="text-gray-700">${{ "{:,.0f}".format(r.precio_promedio) }}</dd></div>
+            {% endif %}
+        </dl>
+    </div>
+    
+    <div class="relative h-[200px] w-full rounded-3xl overflow-hidden shadow-md border border-gray-200 mt-8 flex flex-col justify-center items-center p-6 bg-slate-900 text-center">   
+        <span class="text-2xl mb-2"><i class="fa-solid fa-location-dot text-red-500"></i></span>
+        <h4 class="text-white font-bold text-lg mb-1">¿Cómo llegar?</h4>
+        <p class="text-gray-300 text-sm mb-4">{{ r.direccion }}</p>
+        
+        <a href="https://www.google.com/maps/search/?api=1&query={{ r.direccion|urlencode }}" 
+        target="_blank" 
+        class="bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-xl shadow transition text-sm flex items-center gap-2">
+        <span>Ver en Google Maps</span>
+        </a>
+    </div>
+
+    <h2 class="text-lg font-semibold text-gray-700 my-3">Platos</h2>
+    <ul class="border border-gray-200 rounded-xl divide-y divide-gray-100 text-sm mb-6">
+        {% for p in platos %}
+        <li class="px-4 py-3 flex justify-between">
+            <div>
+                <span class="font-medium text-gray-700">{{ p.nombre }}</span>
+                {% if p.descripcion %}<p class="text-xs text-gray-400">{{ p.descripcion }}</p>{% endif %}
+            </div>
+            <span class="text-gray-600">${{ "{:,.0f}".format(p.precio) }}</span>
+        </li>
+        {% else %}
+        <li class="px-4 py-6 text-center text-gray-400 text-xs">Sin platos todavía.</li>
+        {% endfor %}
+    </ul>
+
+    {% if is_admin %}
+    <!-- Ventana Eliminar -->
+    <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+      <h2 class="text-xl font-semibold">Deseas realizar algun cambio en el restaurante?</h2>
+      <button id="editar-restaurante" class="inline-block mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg self-start">Editar</button>
+      <button id="eliminar-restaurante" class="inline-block mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg self-start">Eliminar Restaurante</button>
+    </div>
+
+    <div id="ventana-eliminar" class="fixed inset-0 z-50 hidden flex flex-col items-center justify-center bg-black/50 backdrop-blur-[4px] p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-xl overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200 p-8">
+            <p class="text-xl font-semibold mb-8">¿Seguro que quieres eliminar este restaurante? Esta acción no se puede deshacer.</p>
+        <form action="/eliminar_restaurante/{{ r.id_restaurante }}" method="POST">
+            <button id="cancelar-ventana-eliminar" type="button" class="px-5 py-2.5 rounded-xl bg-white border border-red-300 text-red-600 hover:bg-red-50 text-sm font-medium transition">Cancelar</button>
+            <button type="submit"
+                    class="px-5 py-2.5 rounded-xl bg-white border border-red-300 text-red-600 hover:bg-red-50 text-sm font-medium transition">
+                <i class="fa-solid fa-trash"></i> Eliminar restaurante
+            </button>
+        </form>
+        </div>
+    </div>
+    
+
+    <!-- Ventana emergente -->
+    <div id="ventana-editar" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-[4px] p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-xl overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fa-solid fa-utensils"></i> Añadir nuevo restaurante
+                </h2>
+                <!-- Botón de cerrar x -->
+                <button id="cerrar-ventana-editar" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-200/60 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Formulario -->
+            <form action="/editar_restaurante/{{ r.id_restaurante }}" method="POST" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Nombre</label>
+                        <input type="text" name="nombre" value="{{r.nombre}}" placeholder="Ej. Doña Inés" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipo de comida</label>
+                        <input type="text" name="tipo_comida" value="{{r.tipo_comida}}" placeholder="Ej. Típica / Italiana" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                    </div>
+                    <div class="col-span-1 sm:col-span-2 space-y-1">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Dirección</label>
+                        <input type="text" name="direccion" value="{{r.direccion}}" placeholder="Ej. Calle 45 # 12-30" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Teléfono <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                        <input type="text" name="telefono" value="{{r.telefono or '' }}" placeholder="Ej. 3101234567" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Precio promedio <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                        <input type="number" name="precio_promedio" value="{{r.precio_promedio if r.precio_promedio is not none else ''}}" placeholder="Ej. 25000" min="0" step="0.01" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Apertura</label>
+                        <input type="time" name="hora_apertura" value="{{ r.hora_apertura.strftime('%H:%M') }}" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition text-gray-600">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Cierre</label>
+                        <input type="time" name="hora_cierre" value="{{ r.hora_cierre.strftime('%H:%M') }}" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition text-gray-600">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
+                    <button type="button" id="cancelar-ventana-editar" class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 text-sm font-medium transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl shadow-md transition">
+                        Guardar restaurante
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% endif %}
+
+
+
+</div>
+
+<script>
+    // ventana editar
+  document.getElementById("editar-restaurante").addEventListener("click", ()=>{
+    document.getElementById("ventana-editar").classList.remove("hidden")
+  })
+
+  document.getElementById("cerrar-ventana-editar").addEventListener("click", ()=>{
+    document.getElementById("ventana-editar").classList.add("hidden")
+  })
+
+  document.getElementById("cancelar-ventana-editar").addEventListener("click", ()=>{
+    document.getElementById("ventana-editar").classList.add("hidden")
+  })
+
+  document.getElementById("eliminar-restaurante").addEventListener("click", ()=>{
+    document.getElementById("ventana-eliminar").classList.remove("hidden")
+  })
+
+  document.getElementById("cancelar-ventana-eliminar").addEventListener("click", ()=>{
+    document.getElementById("ventana-eliminar").classList.add("hidden")
+  })
+
+</script>
+
+{% endblock %}

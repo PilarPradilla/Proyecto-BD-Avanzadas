@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Favoritos · Sabrosometro{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-5xl font-semibold text-gray-800 my-8 text-center">Favoritos</h1>
+
+    <div>
+        {% for r in restaurantes %}
+    <a href="/restaurante/{{ r.id_restaurante }}{% if is_admin %}?admin=true{% endif %}"
+       class="restaurante block"
+       data-nombre="{{ r.nombre|lower }}"
+       data-tipo="{{ r.tipo_comida }}">
+        <div class="w-full flex flex-wrap my-8 bg-gray-50 rounded-xl">
+            <div class="relative w-2/5 rounded-xl">
+                <!-- <button type="button"
+                        aria-label="Guardar en favoritos"
+                        onclick="event.preventDefault(); event.stopPropagation();"
+                        class="absolute top-3 left-3 z-30 flex items-center justify-center w-9 h-9 rounded-full bg-white/90 text-gray-400 hover:text-red-500 shadow transition">
+                    <i class="fa-solid fa-heart"></i>
+                </button> -->
+                <img class="rounded-xl w-full"
+                src="https://th.bing.com/th/id/R.ec6bf82064d04642edacc92026c44f1c?rik=1iFxq0nAIXuesA&pid=ImgRaw&r=0" alt="">
+            </div>
+            <div class="m-8">
+                <h3 class="text-xl font-bold">{{ r.nombre }}</h3>
+                <p>{{ r.tipo_comida }}</p>
+                <p>{{ r.direccion }}</p>
+                <p>{{ r.precio_promedio }}</p>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

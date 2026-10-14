@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabrosometro | Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://kit.fontawesome.com/e97de7ac91.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-white flex h-screen overflow-hidden place-content-center">
+    <div class="flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-6">Iniciar sesión</h1>
+
+        {% if error %}
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg">{{ error }}</div>
+        {% endif %}
+
+        <form action="/login" method="POST" class="space-y-3">
+            <input type="email" name="correo" placeholder="Correo" required
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <input type="password" name="contrasena" placeholder="Contraseña" required
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">Entrar</button>
+        </form>
+
+        <p class="text-sm text-gray-500 mt-4">¿No tienes cuenta? <a href="/registro" class="text-blue-600 hover:underline">Regístrate</a></p>
+    </div>
+</body>
+</html>

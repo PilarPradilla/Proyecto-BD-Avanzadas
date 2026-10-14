@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Inicio · Sabrosometro{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-4xl font-semibold text-gray-800 my-8 text-center">Bienvenida a Sabrosometro</h1>
+
+  <div class="p-6 rounded-xl border border-gray-200 relative overflow-hidden isolate flex flex-col justify-end">
+      
+      <div 
+          class="absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat scale-110 blur-[4px] brightness-50"
+          style="background-image: url('https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2e/55/bd/e2/our-stunning-main-restaurant.jpg?w=1200&h=700&s=1');"
+      ></div>
+      
+      <h2 class="text-2xl font-bold text-white drop-shadow-lg">¿Quieres descubrir nuevos sabores?</h2>
+      <p class="text-gray-200 mt-2 drop-shadow-md">Explora los restaurantes, mira sus platos y califica tus favoritos.</p>
+      <a href="/restaurantes{% if is_admin %}?admin=true{% endif %}"
+        class="inline-block mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg self-start">
+          Ver restaurantes
+      </a>
+  </div>
+
+  <h2 class="my-4 text-lg font-medium text-gray-800">¡Disfruta de la experiencia!</h2>
+</div>
+{% endblock %}

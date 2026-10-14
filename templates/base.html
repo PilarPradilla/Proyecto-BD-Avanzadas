@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sabrosometro{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://kit.fontawesome.com/e97de7ac91.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-white flex h-screen overflow-hidden">
+
+<!-- BARRA LATERAL -->
+<aside id="sidebar" class="w-64 bg-gray-100 border-r border-gray-200 flex flex-col transition-all duration-300">
+    <div class="p-4 flex items-center justify-between border-b border-gray-200">
+        <span class="font-bold text-gray-800 sidebar-text">Sabrosometro</span>
+        <button onclick="toggleSidebar()" class="p-2 rounded-lg hover:bg-gray-200 text-gray-600">☰</button>
+    </div>
+
+    <!-- menu de paginas -->
+    <nav class="p-3 space-y-1 flex-1">
+        <a href="/{% if is_admin %}?admin=true{% endif %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-200 text-gray-700 {% if active == 'inicio' %}bg-gray-200 font-semibold{% endif %}">
+            <span><i class="fa-solid fa-house-chimney"></i></span><span class="sidebar-text">Inicio</span>
+        </a>
+        <a href="/perfil/{{usuario.id_usuario}}{% if is_admin %}?admin=true{% endif %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-200 text-gray-700 {% if active == 'perfil' %}bg-gray-200 font-semibold{% endif %}">
+            <span><i class="fa-solid fa-house-chimney"></i></span><span class="sidebar-text">Mi perfil</span>
+        </a>
+        <a href="/restaurantes{% if is_admin %}?admin=true{% endif %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-200 text-gray-700 {% if active == 'restaurantes' %}bg-gray-200 font-semibold{% endif %}">
+            <span><i class="fa-solid fa-utensils"></i></span><span class="sidebar-text">Restaurantes</span>
+        </a>
+        {% if not is_admin %}
+        <a href="/favoritos{% if is_admin %}?admin=true{% endif %}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-200 text-gray-700 {% if active == 'favoritos' %}bg-gray-200 font-semibold{% endif %}">
+            <span><i class="fa-solid fa-heart"></i></span><span class="sidebar-text">Favoritos</span>
+        </a>
+        {% endif %}
+    </nav>
+
+    <div class="p-3 border-t border-gray-200 text-sm sidebar-text">
+        {% if usuario %}
+            <p class="text-gray-700 font-medium">{{ usuario }}</p>
+            <form action="/logout" method="POST" class="mt-2">
+                <button type="submit" class="text-red-600 hover:underline">Cerrar sesión</button>
+            </form>
+        {% else %}
+            <a href="/login" class="block text-blue-600 hover:underline">Iniciar sesión</a>
+            <a href="/registro" class="block text-gray-500 hover:underline mt-1">Registrarse</a>
+        {% endif %}
+    </div>
+</aside>
+
+<!-- Contenido (cada página lo rellena) -->
+<main class="flex-1 p-6 overflow-y-auto">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- script para el funcionamiento de la barra lateral -->
+<script>
+    function setSidebar(collapsed) {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('w-16', collapsed);
+        sidebar.classList.toggle('w-64', !collapsed);
+        document.querySelectorAll('.sidebar-text')
+            .forEach(el => el.classList.toggle('hidden', collapsed));
+        try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+    }
+
+    function toggleSidebar() {
+        setSidebar(document.getElementById('sidebar').classList.contains('w-64'));
+    }
+
+    // Recordar el estado entre páginas
+    try {
+        if (localStorage.getItem('sidebarCollapsed') === '1') setSidebar(true);
+    } catch (e) {}
+</script>
+</body>
+</html>
