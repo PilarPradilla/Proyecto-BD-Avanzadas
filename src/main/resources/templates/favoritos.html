@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: layout('Sabrosometro | Favoritos', 'favoritos', ~{::section})}">
+<body>
+<section>
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-5xl font-semibold text-gray-800 my-8 text-center">Favoritos</h1>
+    <div id="lista"></div>
+</div>
+
+<script>
+(function () {
+  let sesion = null;
+  try { sesion = JSON.parse(sessionStorage.getItem('usuario')); } catch (e) {}
+  const lista = document.getElementById('lista');
+  if (!sesion) return;   // base.html ya redirige al login
+
+  fetch('/api/favoritos/usuario/' + sesion.idUsuario)
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(pintar)
+    .catch(() => {
+      lista.innerHTML = '<p class="text-center text-gray-500">No se pudieron cargar tus favoritos.</p>';
+    });
+
+  function pintar(restaurantes) {
+    if (restaurantes.length === 0) {
+      lista.innerHTML = '<p class="text-center text-gray-500">Aún no tienes restaurantes favoritos.</p>';
+      return;
+    }
+    restaurantes.forEach(r => {
+      const a = document.createElement('a');
+      a.href = '/restaurante/' + r.idRestaurante;
+      a.className = 'restaurante block';
+      a.innerHTML =
+        '<div class="w-full flex flex-wrap my-8 bg-gray-50 rounded-xl">' +
+          '<div class="relative w-2/5 rounded-xl">' +
+            '<img class="rounded-xl w-full" alt="" src="https://th.bing.com/th/id/R.ec6bf82064d04642edacc92026c44f1c?rik=1iFxq0nAIXuesA&pid=ImgRaw&r=0">' +
+          '</div>' +
+          '<div class="m-8">' +
+            '<h3 class="text-xl font-bold t-nombre"></h3>' +
+            '<p class="t-tipo"></p><p class="t-dir"></p><p class="t-zona text-gray-500"></p>' +
+          '</div>' +
+        '</div>';
+      a.querySelector('.t-nombre').textContent = r.nombre;
+      a.querySelector('.t-tipo').textContent = r.tipoComida;
+      a.querySelector('.t-dir').textContent = r.direccion;
+      a.querySelector('.t-zona').textContent = r.zona;
+      lista.appendChild(a);
+    });
+  }
+})();
+</script>
+</section>
+</body>
+</html>

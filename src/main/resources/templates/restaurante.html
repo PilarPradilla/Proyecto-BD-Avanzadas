@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: layout('Sabrosometro | Restaurante', 'restaurantes', ~{::section})}">
+<body>
+<section>
+<div class="max-w-4xl mx-auto">
+    <a href="/restaurantes-pagina" class="text-sm text-blue-600 hover:underline">← Volver a la lista</a>
+
+    <div id="error" class="hidden mt-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg"></div>
+
+    <!-- Portada -->
+    <div class="relative h-[300px] w-full rounded-3xl overflow-hidden flex flex-col justify-center items-center p-8 mt-8 text-center">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent -z-10"></div>
+        <div class="absolute inset-0 bg-cover bg-center scale-105 blur-[1px] brightness-90 -z-20"
+             style="background-image: url('https://th.bing.com/th/id/R.ec6bf82064d04642edacc92026c44f1c?rik=1iFxq0nAIXuesA&pid=ImgRaw&r=0');"></div>
+        <h1 id="r-nombre" class="text-5xl font-bold text-white drop-shadow-lg relative z-10"></h1>
+    </div>
+
+    <!-- Datos -->
+    <div class="my-8 px-6">
+        <p id="r-tipo" class="text-gray-500 mb-1"></p>
+        <p id="r-promedio" class="text-sm text-gray-600 mb-4"></p>
+        <dl class="text-sm space-y-2 mb-8">
+            <div class="flex gap-2"><dt class="w-28"><i class="fa-solid fa-map-location-dot"></i> Dirección</dt><dd id="r-direccion" class="text-gray-700"></dd></div>
+            <div class="flex gap-2"><dt class="w-28"><i class="fa-solid fa-location-crosshairs"></i> Zona</dt><dd id="r-zona" class="text-gray-700"></dd></div>
+            <div class="flex gap-2"><dt class="w-28"><i class="fa-solid fa-clock"></i> Horario</dt><dd id="r-horario" class="text-gray-700"></dd></div>
+            <div id="fila-tel" class="hidden flex gap-2"><dt class="w-28"><i class="fa-solid fa-phone-volume"></i> Teléfono</dt><dd id="r-telefono" class="text-gray-700"></dd></div>
+        </dl>
+    </div>
+
+    <!-- Cómo llegar -->
+    <div class="relative h-[200px] w-full rounded-3xl overflow-hidden shadow-md border border-gray-200 mt-8 flex flex-col justify-center items-center p-6 bg-slate-900 text-center">
+        <span class="text-2xl mb-2"><i class="fa-solid fa-location-dot text-red-500"></i></span>
+        <h4 class="text-white font-bold text-lg mb-1">¿Cómo llegar?</h4>
+        <p id="mapa-direccion" class="text-gray-300 text-sm mb-4"></p>
+        <a id="mapa-link" href="#" target="_blank" rel="noopener"
+           class="bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-xl shadow transition text-sm flex items-center gap-2">
+            <span>Ver en Google Maps</span>
+        </a>
+    </div>
+
+    <!-- Platos -->
+    <h2 class="text-lg font-semibold text-gray-700 my-3">Platos</h2>
+    <ul id="platos" class="border border-gray-200 rounded-xl divide-y divide-gray-100 text-sm mb-6"></ul>
+
+    <!-- Solo administrador -->
+    <div id="bloqueAdmin" class="hidden">
+        <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <h2 class="text-xl font-semibold">¿Deseas realizar algún cambio en el restaurante?</h2>
+            <button id="editar-restaurante" class="inline-block mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg">Editar</button>
+            <button id="eliminar-restaurante" class="inline-block mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg">Eliminar restaurante</button>
+        </div>
+
+        <!-- Ventana eliminar -->
+        <div id="ventana-eliminar" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-[4px] p-4">
+            <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-xl overflow-hidden p-8">
+                <p class="text-xl font-semibold mb-4">¿Seguro que quieres eliminar este restaurante? Esta acción no se puede deshacer.</p>
+                <p id="errorEliminar" class="hidden text-sm text-red-600 mb-4"></p>
+                <button id="cancelar-ventana-eliminar" type="button" class="px-5 py-2.5 rounded-xl bg-white border border-red-300 text-red-600 hover:bg-red-50 text-sm font-medium transition">Cancelar</button>
+                <button id="confirmar-eliminar" type="button" class="px-5 py-2.5 rounded-xl bg-white border border-red-300 text-red-600 hover:bg-red-50 text-sm font-medium transition">
+                    <i class="fa-solid fa-trash"></i> Eliminar restaurante
+                </button>
+            </div>
+        </div>
+
+        <!-- Ventana editar -->
+        <div id="ventana-editar" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-[4px] p-4">
+            <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-utensils"></i> Editar restaurante
+                    </h2>
+                    <button id="cerrar-ventana-editar" type="button" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-200/60 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="formEditar" class="p-6 space-y-4">
+                    <div id="errorEditar" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2 rounded-lg"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Nombre</label>
+                            <input type="text" id="e-nombre" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipo de comida</label>
+                            <input type="text" id="e-tipo" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                        </div>
+                        <div class="col-span-1 sm:col-span-2 space-y-1">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Dirección</label>
+                            <input type="text" id="e-direccion" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Zona</label>
+                            <input type="text" id="e-zona" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Teléfono <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                            <input type="text" id="e-telefono" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Apertura</label>
+                            <input type="time" id="e-apertura" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition text-gray-600">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider">Cierre</label>
+                            <input type="time" id="e-cierre" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500 transition text-gray-600">
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
+                        <button type="button" id="cancelar-ventana-editar" class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 text-sm font-medium transition">Cancelar</button>
+                        <button type="submit" class="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl shadow-md transition">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+  let sesion = null;
+  try { sesion = JSON.parse(sessionStorage.getItem('usuario')); } catch (e) {}
+  const soyAdmin = !!sesion && sesion.rol === 'administrador';
+
+  const idRest = location.pathname.split('/').pop();
+  const $ = id => document.getElementById(id);
+  let actual = null;   // restaurante cargado (se usa para el PUT)
+
+  const hhmm   = t => (t || '').substring(0, 5);
+  const dinero = n => '$' + Number(n).toLocaleString('es-CO', { maximumFractionDigits: 0 });
+
+  function mostrarError(msg) {
+    $('error').textContent = msg;
+    $('error').classList.remove('hidden');
+  }
+
+  // ── Cargar restaurante ──
+  async function cargarRestaurante() {
+    try {
+      const res = await fetch('/restaurantes/' + idRest);
+      if (res.status === 404) { mostrarError('Este restaurante no existe.'); return; }
+      if (!res.ok) throw new Error(res.status);
+      actual = await res.json();
+      pintarRestaurante(actual);
+    } catch (err) {
+      mostrarError('No se pudo cargar el restaurante.');
+    }
+  }
+
+  function pintarRestaurante(r) {
+    $('r-nombre').textContent = r.nombre;
+    $('r-tipo').textContent = r.tipoComida;
+    $('r-promedio').textContent = '★ ' + Number(r.promedioGeneral).toFixed(1) + ' (' + r.totalCalificaciones + ' calificaciones)';
+    $('r-direccion').textContent = r.direccion;
+    $('r-zona').textContent = r.zona;
+    $('r-horario').textContent = hhmm(r.horaApertura) + ' - ' + hhmm(r.horaCierre);
+    if (r.telefono) {
+      $('r-telefono').textContent = r.telefono;
+      $('fila-tel').classList.remove('hidden');
+    } else {
+      $('fila-tel').classList.add('hidden');
+    }
+    $('mapa-direccion').textContent = r.direccion;
+    $('mapa-link').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(r.direccion);
+    document.title = r.nombre + ' · Sabrosometro';
+  }
+
+  // ── Cargar platos ──
+  async function cargarPlatos() {
+    const ul = $('platos');
+    try {
+      const res = await fetch('/platos/restaurante/' + idRest);
+      if (!res.ok) throw new Error(res.status);
+      const platos = await res.json();
+      ul.innerHTML = '';
+      if (platos.length === 0) {
+        ul.innerHTML = '<li class="px-4 py-6 text-center text-gray-400 text-xs">Sin platos todavía.</li>';
+        return;
+      }
+      platos.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'px-4 py-3 flex justify-between';
+        li.innerHTML = '<div><span class="font-medium text-gray-700 p-nombre"></span>' +
+                       '<p class="text-xs text-gray-400 p-desc"></p></div>' +
+                       '<span class="text-gray-600 p-precio"></span>';
+        li.querySelector('.p-nombre').textContent = p.nombre;
+        const d = li.querySelector('.p-desc');
+        if (p.descripcion) d.textContent = p.descripcion; else d.remove();
+        li.querySelector('.p-precio').textContent = dinero(p.precio);
+        ul.appendChild(li);
+      });
+    } catch (err) {
+      ul.innerHTML = '<li class="px-4 py-6 text-center text-gray-400 text-xs">No se pudieron cargar los platos.</li>';
+    }
+  }
+
+  // ── Administrador: editar y eliminar ──
+  if (soyAdmin) {
+    $('bloqueAdmin').classList.remove('hidden');
+
+    const abrir  = id => { $(id).classList.remove('hidden'); $(id).classList.add('flex'); };
+    const cerrar = id => { $(id).classList.add('hidden'); $(id).classList.remove('flex'); };
+
+    // Editar
+    $('editar-restaurante').addEventListener('click', () => {
+      if (!actual) return;
+      $('e-nombre').value    = actual.nombre;
+      $('e-tipo').value      = actual.tipoComida;
+      $('e-direccion').value = actual.direccion;
+      $('e-zona').value      = actual.zona;
+      $('e-telefono').value  = actual.telefono || '';
+      $('e-apertura').value  = hhmm(actual.horaApertura);
+      $('e-cierre').value    = hhmm(actual.horaCierre);
+      $('errorEditar').classList.add('hidden');
+      abrir('ventana-editar');
+    });
+    $('cerrar-ventana-editar').addEventListener('click', () => cerrar('ventana-editar'));
+    $('cancelar-ventana-editar').addEventListener('click', () => cerrar('ventana-editar'));
+
+    $('formEditar').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const tel = $('e-telefono').value.trim();
+      const body = {
+        idDueno: actual.idDueno,   // se conserva el dueño actual
+        nombre: $('e-nombre').value.trim(),
+        tipoComida: $('e-tipo').value.trim(),
+        direccion: $('e-direccion').value.trim(),
+        zona: $('e-zona').value.trim(),
+        telefono: tel === '' ? null : tel,
+        horaApertura: $('e-apertura').value + ':00',
+        horaCierre: $('e-cierre').value + ':00'
+      };
+      try {
+        const res = await fetch('/restaurantes/' + idRest, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (res.ok) {
+          cerrar('ventana-editar');
+          cargarRestaurante();
+        } else {
+          $('errorEditar').textContent = 'No se pudo guardar (¿ya existe ese nombre en esa dirección, o el horario es inválido?)';
+          $('errorEditar').classList.remove('hidden');
+        }
+      } catch (err) {
+        $('errorEditar').textContent = 'No se pudo conectar con el servidor';
+        $('errorEditar').classList.remove('hidden');
+      }
+    });
+
+    // Eliminar
+    $('eliminar-restaurante').addEventListener('click', () => {
+      $('errorEliminar').classList.add('hidden');
+      abrir('ventana-eliminar');
+    });
+    $('cancelar-ventana-eliminar').addEventListener('click', () => cerrar('ventana-eliminar'));
+
+    $('confirmar-eliminar').addEventListener('click', async () => {
+      try {
+        const res = await fetch('/restaurantes/' + idRest, { method: 'DELETE' });
+        if (res.ok) {
+          window.location.href = '/restaurantes-pagina';
+        } else {
+          $('errorEliminar').textContent = 'No se pudo eliminar. Puede tener platos, calificaciones u otros registros asociados.';
+          $('errorEliminar').classList.remove('hidden');
+        }
+      } catch (err) {
+        $('errorEliminar').textContent = 'No se pudo conectar con el servidor';
+        $('errorEliminar').classList.remove('hidden');
+      }
+    });
+  }
+
+  cargarRestaurante();
+  cargarPlatos();
+})();
+</script>
+</section>
+</body>
+</html>

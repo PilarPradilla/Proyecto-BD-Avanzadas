@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: layout('Sabrosometro | Restaurantes', 'restaurantes', ~{::section})}">
+<body>
+    <section>
+        <h1 class="text-2xl font-semibold">Perfil</h1>
+        <!-- tu contenido propio -->
+         <h1 id="nombre" class="text-2xl font-semibold"></h1>
+        <p id="correo" class="text-gray-600"></p>
+
+        <script>
+            const id = location.pathname.split('/').pop();
+            fetch('/usuarios/' + id)
+                .then(r => r.json())
+                .then(u => {
+                    document.getElementById('nombre').textContent = u.nombre;
+                    document.getElementById('correo').textContent = u.correo;
+                });
+        </script>
+    </section>
+</body>
+</html>

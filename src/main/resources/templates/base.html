@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(titulo, activo, contenido)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${titulo}">Sabrosometro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://kit.fontawesome.com/e97de7ac91.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-white flex h-screen overflow-hidden">
+
+<!-- BARRA LATERAL -->
+<aside id="sidebar" class="w-64 bg-gray-100 border-r border-gray-200 flex flex-col transition-all duration-300">
+    <div class="p-4 flex items-center justify-between border-b border-gray-200">
+        <span class="font-bold text-gray-800 sidebar-text">Sabrosometro</span>
+        <button onclick="toggleSidebar()" class="p-2 rounded-lg hover:bg-gray-200 text-gray-600">☰</button>
+    </div>
+
+    <nav class="p-3 space-y-1 flex-1">
+        <a href="/inicio"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-200 text-gray-700">
+            <span><i class="fa-solid fa-house-chimney"></i></span><span class="sidebar-text">Inicio</span>
+        </a>
+        <a id="linkPerfil" href="/login.html"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-200 text-gray-700">
+            <span><i class="fa-solid fa-user"></i></span><span class="sidebar-text">Mi perfil</span>
+        </a>
+        <a href="/restaurantes-pagina"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-200 text-gray-700">
+            <span><i class="fa-solid fa-utensils"></i></span><span class="sidebar-text">Restaurantes</span>
+        </a>
+        <a id="linkFavoritos" href="/favoritos"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-200 text-gray-700">
+            <span><i class="fa-solid fa-heart"></i></span><span class="sidebar-text">Favoritos</span>
+        </a>
+    </nav>
+
+    <!-- Se llena con JavaScript desde sessionStorage -->
+    <div id="zonaUsuario" class="p-3 border-t border-gray-200 text-sm sidebar-text"></div>
+</aside>
+
+<!-- Contenido (cada página lo rellena) -->
+<main class="flex-1 p-6 overflow-y-auto">
+    <th:block th:replace="${contenido}"></th:block>
+</main>
+
+<script>
+    // ── Barra lateral ──
+    function setSidebar(collapsed) {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('w-16', collapsed);
+        sidebar.classList.toggle('w-64', !collapsed);
+        document.querySelectorAll('.sidebar-text')
+            .forEach(el => el.classList.toggle('hidden', collapsed));
+        try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+    }
+    function toggleSidebar() {
+        setSidebar(document.getElementById('sidebar').classList.contains('w-64'));
+    }
+
+    // ── Usuario en sesión ──
+    function getUsuario() {
+        try { return JSON.parse(sessionStorage.getItem('usuario')); } catch (e) { return null; }
+    }
+    function cerrarSesion() {
+        sessionStorage.removeItem('usuario');
+        window.location.href = '/login.html';
+    }
+
+    const usuario = getUsuario();
+    const esAdmin = usuario && usuario.rol === 'administrador';
+    const zona = document.getElementById('zonaUsuario');
+
+    if (!usuario) {
+        window.location.href = '/login.html';
+    } else {
+        document.getElementById('linkPerfil').href = '/perfil/' + usuario.idUsuario;
+        if (esAdmin) document.getElementById('linkFavoritos').remove();
+        zona.innerHTML =
+            '<p class="text-gray-700 font-medium"></p>' +
+            '<button onclick="cerrarSesion()" class="mt-2 text-red-600 hover:underline">Cerrar sesión</button>';
+        zona.querySelector('p').textContent = usuario.nombre;
+    }
+
+    // ── Marcar la sección activa según la URL ──
+    const ruta = location.pathname;
+    let seccionActiva = null;
+    if (ruta.startsWith('/inicio'))           seccionActiva = 'inicio';
+    else if (ruta.startsWith('/perfil'))      seccionActiva = 'perfil';
+    else if (ruta.startsWith('/restaurante')) seccionActiva = 'restaurantes';  // cubre /restaurantes-pagina y /restaurante/{id}
+    else if (ruta.startsWith('/favoritos'))   seccionActiva = 'favoritos';
+
+    document.querySelectorAll('#sidebar nav a[data-seccion]').forEach(a => {
+        if (a.dataset.seccion === seccionActiva) {
+            a.classList.add('bg-gray-200', 'font-semibold');
+        }
+    });
+
+    // Recordar el estado de la barra entre páginas
+    try {
+        if (localStorage.getItem('sidebarCollapsed') === '1') setSidebar(true);
+    } catch (e) {}
+</script>
+</body>
+</html>
