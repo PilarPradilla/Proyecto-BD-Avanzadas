@@ -3,20 +3,31 @@
       th:replace="~{base :: layout('Sabrosometro | Restaurantes', 'restaurantes', ~{::section})}">
 <body>
     <section>
-        <h1 class="text-2xl font-semibold">Perfil</h1>
-        <!-- tu contenido propio -->
-         <h1 id="nombre" class="text-2xl font-semibold"></h1>
-        <p id="correo" class="text-gray-600"></p>
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-semibold mt-4">Buen día, <span id="nombre-usuario"></span></h1>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere, veritatis.</p>
+        <div class="flex items-center gap-4 mt-8 bg-gray-100 p-4 rounded-lg p-8">
+            <div class="flex flex-col w-3/4">
+                <p>rol</p>
+                <p id="nombre" class="text-2xl font-semibold"></p>
+                <p id="correo" class="text-gray-600"></p>
+            </div>
+            <img src="https://th.bing.com/th/id/OIP.jf9JmF0NivpTdR2bqJB67QHaHa?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3" alt=""
+                 class="w-40 h-40 rounded-full object-cover">
+        </div>
+        
 
         <script>
             const id = location.pathname.split('/').pop();
             fetch('/usuarios/' + id)
                 .then(r => r.json())
                 .then(u => {
+                    document.getElementById('nombre-usuario').textContent = u.nombre;
                     document.getElementById('nombre').textContent = u.nombre;
                     document.getElementById('correo').textContent = u.correo;
                 });
         </script>
+    </div>
     </section>
 </body>
 </html>

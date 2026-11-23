@@ -137,4 +137,17 @@ public class RestauranteRepository {
     public boolean delete(int id) {
         return jdbc.update("DELETE FROM restaurante WHERE id_restaurante = ?", id) > 0;
     }
+
+
+    public void registrarConMenu(Integer idDueno, String nombre, String tipoComida,
+                             String direccion, String zona, String telefono,
+                             String horaApertura, String horaCierre, String platosJson) {
+    jdbc.update("""
+            CALL pr_registrar_restaurante_con_menu(
+                CAST(? AS INT), ?, ?, ?, ?, ?,
+                CAST(? AS TIME), CAST(? AS TIME), CAST(? AS JSONB))
+            """,
+            idDueno, nombre, tipoComida, direccion, zona, telefono,
+            horaApertura, horaCierre, platosJson);
+    }
 }
