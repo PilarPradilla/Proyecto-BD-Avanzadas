@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import com.app.sabrosometro.model.Plato;
 
-/** CRUD de la tabla "plato" con JdbcTemplate: aquí vive TODO el SQL. */
 @Repository
 public class PlatoRepository {
     private final JdbcTemplate jdbc;

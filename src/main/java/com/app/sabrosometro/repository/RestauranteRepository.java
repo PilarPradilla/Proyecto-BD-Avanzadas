@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import com.app.sabrosometro.model.Restaurante;
 
-/** CRUD de la tabla "restaurante" con JdbcTemplate: aquí vive TODO el SQL. */
 @Repository
 public class RestauranteRepository {
     private final JdbcTemplate jdbc;
